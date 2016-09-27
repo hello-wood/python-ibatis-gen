@@ -25,6 +25,7 @@ gen_config = {
     "data_access_interface": None,
     "xml_namespace_prefix": None,
     "is_generate_batch_insert": False,
+    "is_use_comment": True,
 
 }
 

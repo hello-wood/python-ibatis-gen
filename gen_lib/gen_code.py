@@ -104,7 +104,13 @@ def gen_domain_object(table_info_list):
 
         var_name = __get_java_like_string(field.field_name)
         func_suffix = "%s%s" % (var_name[0].upper(), var_name[1:])
-        declare_str = "    %s %s;" % (var_type, var_name)
+        declare_str = ""
+        if gen_config['is_use_comment']:
+            declare_str = "    /**\n" \
+                          "     *%s\n" \
+                          "     **/\n" % field.comment
+
+        declare_str = "%s    %s %s;" % (declare_str, var_type, var_name)
         set_fun_str = "    public void set%s(%s %s){\n        this.%s=%s;\n    }" % \
                       (func_suffix, var_type, var_name, var_name, var_name)
         get_fun_str = "    public %s get%s(){\n        return this.%s;\n    }" % \
