@@ -105,7 +105,7 @@ def gen_domain_object(table_info_list):
         var_name = __get_java_like_string(field.field_name)
         func_suffix = "%s%s" % (var_name[0].upper(), var_name[1:])
         declare_str = ""
-        if gen_config['is_use_comment']:
+        if gen_config['is_use_comment'] and field.comment is not None and field.comment != '':
             declare_str = "    /**\n" \
                           "     *%s\n" \
                           "     **/\n" % field.comment

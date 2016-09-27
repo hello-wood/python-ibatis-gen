@@ -1,10 +1,10 @@
 # coding=utf-8
 # 数据库连接配置
 connect_config = {
-    "url": "",
-    "user": "",
-    "password": "",
-    "db": ""
+    "url": "127.0.0.1",
+    "user": "root",
+    "password": "52Xlm,./",
+    "db": "linjun_db"
 }
 
 # 生成配置
