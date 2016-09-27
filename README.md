@@ -6,5 +6,6 @@
 * 运行python ibatis_gen.py
 
 ### 依赖
+* python 2.7+
 * pysql
 * lxml
