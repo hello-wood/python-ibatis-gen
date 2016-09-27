@@ -26,7 +26,7 @@ gen_config = {
     "xml_namespace_prefix": None,
     "is_generate_batch_insert": False,
     "is_use_comment": True,
-
+    "charset": 'utf8'
 }
 
 

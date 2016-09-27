@@ -120,7 +120,7 @@ def gen_domain_object(table_info_list):
     import_str.append("import java.io.Serializable;")
     import_del = "\n".join(import_str)
     main_str = "\n".join(field_str)
-    class_str = "%s\n%s\npublic class %s implements Serializable {\n%s\n}" \
+    class_str = "%s\n\n%s\n\npublic class %s implements Serializable {\n%s\n}" \
                 % (package_str, import_del, get_domain_object_name(), main_str)
     return class_str
 
@@ -142,7 +142,7 @@ def gen_data_access_interface(pri_key_info):
     import_str = '\n'.join(import_declare)
     func_str = '\n'.join(func_declare)
 
-    main_str = "%s\n%s\npublic interface %s {\n%s\n}" %\
+    main_str = "%s\n\n%s\n\npublic interface %s {\n%s\n}" %\
                (package_str, import_str, get_data_access_object_name(), func_str)
     return main_str
 

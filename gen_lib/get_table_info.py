@@ -11,7 +11,7 @@ def get_table_info():
 
     connect = pymysql.connect(connect_config['url'], connect_config['user'],
                               connect_config['password'], connect_config['db'],
-                              charset='utf8mb4')
+                              charset=gen_config['charset'])
     cursor = connect.cursor()
     cursor.execute("show full columns from %s" % gen_config['table'])
 
