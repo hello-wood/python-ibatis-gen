@@ -105,9 +105,9 @@ def gen_domain_object(table_info_list):
         var_name = __get_java_like_string(field.field_name)
         func_suffix = "%s%s" % (var_name[0].upper(), var_name[1:])
         declare_str = "    %s %s;" % (var_type, var_name)
-        set_fun_str = "    public void set%s(%s %s){\n        this.%s=%s\n    }" % \
+        set_fun_str = "    public void set%s(%s %s){\n        this.%s=%s;\n    }" % \
                       (func_suffix, var_type, var_name, var_name, var_name)
-        get_fun_str = "    public %s get%s(){\n        return this.%s\n    }" % \
+        get_fun_str = "    public %s get%s(){\n        return this.%s;\n    }" % \
                       (var_type, func_suffix, var_name)
         field_str.append("%s\n%s\n%s" % (declare_str, set_fun_str, get_fun_str))
 
