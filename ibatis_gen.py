@@ -14,10 +14,18 @@ xml = gen_code.gen_xml(table_field_list)
 domain_object = gen_code.gen_domain_object(table_field_list)
 access_interface = gen_code.gen_data_access_interface(pri_key_info)
 
-class_path = gen_config['product_path']
+
+def get_stand_path(path):
+    if path[-1] != "/":
+        return path+"/"
+    return path
+
+class_path = get_stand_path(gen_config['product_path'])
 
 # 生成xml
-xml_path = class_path + gen_config['sql_map_path']
+sql_map_path = get_stand_path(gen_config['sql_map_path'])
+
+xml_path = class_path + sql_map_path
 if not os.path.exists(xml_path):
     os.makedirs(xml_path)
 
@@ -27,8 +35,9 @@ xml_fd = open(xml_file, "w")
 xml_fd.write(xml)
 xml_fd.close()
 
+java_path = get_stand_path(gen_config['java_path'])
 # 生成领域对象
-domain_object_path = class_path + gen_config['java_path'] \
+domain_object_path = class_path + java_path \
                      + gen_config['domain_object_package'].replace(".", "/")
 
 if not os.path.exists(domain_object_path):
@@ -41,7 +50,7 @@ domain_object_fd.write(domain_object)
 domain_object_fd.close()
 
 # 生成DAO对象
-access_object_path = class_path + gen_config['java_path'] \
+access_object_path = class_path + java_path \
                      + gen_config['data_access_package'].replace(".", "/")
 
 if not os.path.exists(access_object_path):
