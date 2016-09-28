@@ -78,10 +78,47 @@ def gen_xml(table_info_list):
                     % (table, pri_key_field.field_name, __get_java_like_string(pri_key_field.field_name))
         return node
 
+    def get_insert():
+        node = etree.Element("insert")
+        node.set("id", "insert")
+        node.set("parameterClass", domain_object_alias)
+        node.text = "\n    INSERT INTO %s\n    " % table
+        dynamic_node_declare = etree.Element("dynamic", prepend="(")
+        dynamic_node_declare.text = "\n        "
+        is_not_null_node = None
+        for field in table_info_list:
+            is_not_null_node = etree.Element("isNotNull")
+            is_not_null_node.set("prepend", ",")
+            is_not_null_node.set("property", __get_java_like_string(field.field_name))
+            is_not_null_node.text = "`%s`" % field.field_name
+            is_not_null_node.tail = "\n        "
+            dynamic_node_declare.append(is_not_null_node)
+
+        is_not_null_node.tail = "\n    )\n    "
+        node.append(dynamic_node_declare)
+        dynamic_node_declare.tail = "\n    VALUES\n    "
+
+        dynamic_node_value = etree.Element("dynamic", prepend="(")
+        dynamic_node_value.text = "\n        "
+        is_not_null_node = None
+        for field in table_info_list:
+            property_str = __get_java_like_string(field.field_name)
+            is_not_null_node = etree.Element("isNotNull")
+            is_not_null_node.set("prepend", ",")
+            is_not_null_node.set("property", property_str)
+            is_not_null_node.text = "#%s#" % property_str
+            is_not_null_node.tail = "\n        "
+            dynamic_node_value.append(is_not_null_node)
+        is_not_null_node.tail = "\n    )\n    "
+        dynamic_node_value.tail = "\n  "
+        node.append(dynamic_node_value)
+        return node
+
     sql_map.append(get_type_alias())
     sql_map.append(get_result_map())
     sql_map.append(get_all_column_list())
     sql_map.append(get_select_by_pri_key())
+    sql_map.append(get_insert())
 
     return etree.tostring(sql_map, pretty_print=True,
                           xml_declaration=True, encoding='UTF-8',
