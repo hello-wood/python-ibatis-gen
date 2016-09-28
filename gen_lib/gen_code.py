@@ -170,12 +170,18 @@ def gen_data_access_interface(pri_key_info):
 
     imported_type = ["Integer", "Long", "String"]
 
+    #生成 select by pri
     var_type = type_map_sample[pri_key_info.field_type]
     if var_type not in imported_type:
         import_declare.append('import %s;' % type_map[pri_key_info.field_type])
     select_pri = "    %s selectByPriKey(%s %s);" % (domain_object_name, var_type,
                                                 __get_java_like_string(pri_key_info.field_name))
     func_declare.append(select_pri)
+
+    #生成 insert
+    insert_fun = "    void insert(%s param);" % domain_object_name
+    func_declare.append(insert_fun)
+
     import_str = '\n'.join(import_declare)
     func_str = '\n'.join(func_declare)
 
