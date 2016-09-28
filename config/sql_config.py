@@ -12,7 +12,7 @@ gen_config = {
     # 必填
     "table": "xml_gen_table",
     # 必填
-    "product_path": "/Users/linjun/Workspaces/java/xman/test/",
+    "product_path": "/Users/linjun/Workspaces/java/test/",
     "java_path": "src/main/java/",
     "sql_map_path": "src/main/resources/dal/sqlmap/",
     #默认 [table].xml
