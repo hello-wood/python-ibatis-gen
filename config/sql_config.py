@@ -22,6 +22,7 @@ gen_config = {
     "domain_object_name": None,
     # 必填
     "data_access_package": "com.test.test.dao",
+    "data_access_impl_package": "com.test.test.dao.impl",
     "data_access_interface": None,
     "xml_namespace_prefix": None,
     "is_generate_batch_insert": False,

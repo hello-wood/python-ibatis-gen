@@ -13,6 +13,7 @@ for field in table_field_list:
 xml = gen_code.gen_xml(table_field_list)
 domain_object = gen_code.gen_domain_object(table_field_list)
 access_interface = gen_code.gen_data_access_interface(pri_key_info)
+access_interface_impl = gen_code.gen_data_access_interface_impl(pri_key_info)
 
 
 def get_stand_path(path):
@@ -54,4 +55,8 @@ access_object_path = class_path + java_path \
                      + gen_config['data_access_package'].replace(".", "/")
 
 write_to_file(access_object_path, "%s.java" % gen_code.get_data_access_object_name(), access_interface)
+
+access_impl_object_path = class_path + java_path\
+                            + gen_config['data_access_impl_package'].replace(".", "/")
+write_to_file(access_object_path, "%s.java" % gen_code.get_data_access_object_impl_name(), access_interface_impl)
 exit(0)

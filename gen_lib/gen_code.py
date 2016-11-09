@@ -4,6 +4,21 @@ from config.sql_config import gen_config
 from config.type_map import type_map
 from config.type_map import type_map_sample
 
+imported_type = ["Integer", "Long", "String"]
+
+FOUR_SPACE = "    "
+
+
+def get_namespace():
+    namespace = gen_config['table']
+    set_prefix = gen_config['xml_namespace_prefix']
+    if set_prefix is None \
+            or set_prefix == '':
+        pass
+    else:
+        namespace = "%s.%s" % (set_prefix, namespace)
+    return namespace
+
 
 def gen_xml(table_info_list):
     from lxml import etree
@@ -17,15 +32,8 @@ def gen_xml(table_info_list):
     result_map_id = __get_java_like_string(table) + "ResultMap"
 
     def get_sql_map():
-        namespace = gen_config['table']
-        set_prefix = gen_config['xml_namespace_prefix']
-        if set_prefix is None \
-                or set_prefix == '':
-            pass
-        else:
-            namespace = "%s.%s" % (set_prefix, namespace)
         node = etree.Element("sqlMap")
-        node.set("namespace", namespace)
+        node.set("namespace", get_namespace())
         return node
 
     sql_map = get_sql_map()
@@ -61,11 +69,13 @@ def gen_xml(table_info_list):
         node.text = ", ".join(columns)
         return node
 
-    def get_select_by_pri_key():
-        pri_key_field = ""
+    def get_pri_key():
         for field_info in table_info_list:
             if field_info.is_pri_key:
-                pri_key_field = field_info
+                return field_info
+
+    def get_select_by_pri_key():
+        pri_key_field = get_pri_key()
 
         node = etree.Element("select")
         node.set("id", 'selectByPriKey')
@@ -75,7 +85,7 @@ def gen_xml(table_info_list):
         include_node = etree.Element("include", refid="all_column_list")
         node.append(include_node)
         include_node.tail = "\n    FROM %s WHERE %s = #%s#\n  " \
-                    % (table, pri_key_field.field_name, __get_java_like_string(pri_key_field.field_name))
+                            % (table, pri_key_field.field_name, __get_java_like_string(pri_key_field.field_name))
         return node
 
     def get_insert():
@@ -112,6 +122,12 @@ def gen_xml(table_info_list):
         is_not_null_node.tail = "\n    )\n    "
         dynamic_node_value.tail = "\n  "
         node.append(dynamic_node_value)
+        select_key_node = etree.Element("selectKey")
+        pri_key = get_pri_key()
+        select_key_node.set("resultClass", type_map[pri_key.field_type])
+        select_key_node.set("keyProperty", pri_key.field_name)
+        select_key_node.text = "SELECT @@IDENTITY AS ID"
+        node.append(select_key_node)
         return node
 
     sql_map.append(get_type_alias())
@@ -126,11 +142,9 @@ def gen_xml(table_info_list):
 
 
 def gen_domain_object(table_info_list):
-
     package_str = "package %s;" % gen_config['domain_object_package']
     import_str = []
     field_str = []
-    imported_type = {"Integer", "Long", "String"}
 
     for field in table_info_list:
         var_type = type_map_sample[field.field_type]
@@ -168,25 +182,55 @@ def gen_data_access_interface(pri_key_info):
     import_declare = ['import %s.%s;' % (gen_config['domain_object_package'], domain_object_name)]
     func_declare = []
 
-    imported_type = ["Integer", "Long", "String"]
-
-    #生成 select by pri
+    # 生成 select by pri
     var_type = type_map_sample[pri_key_info.field_type]
     if var_type not in imported_type:
         import_declare.append('import %s;' % type_map[pri_key_info.field_type])
     select_pri = "    %s selectByPriKey(%s %s);" % (domain_object_name, var_type,
-                                                __get_java_like_string(pri_key_info.field_name))
+                                                    __get_java_like_string(pri_key_info.field_name))
     func_declare.append(select_pri)
 
-    #生成 insert
+    # 生成 insert
     insert_fun = "    void insert(%s param);" % domain_object_name
     func_declare.append(insert_fun)
 
     import_str = '\n'.join(import_declare)
     func_str = '\n'.join(func_declare)
 
-    main_str = "%s\n\n%s\n\npublic interface %s {\n%s\n}" %\
+    main_str = "%s\n\n%s\n\npublic interface %s {\n%s\n}" % \
                (package_str, import_str, get_data_access_object_name(), func_str)
+    return main_str
+
+
+def gen_data_access_interface_impl(pri_key_info):
+    domain_object_name = get_domain_object_name()
+    package_str = "package %s;" % gen_config['data_access_impl_package']
+    import_declare = ['import %s.%s;' % (gen_config['domain_object_package'], domain_object_name),
+                      'import org.springframework.orm.ibatis.support.SqlMapClientDaoSupport;']
+    func_declare = []
+
+    # 生成 select by pri
+    var_type = type_map_sample[pri_key_info.field_type]
+    if var_type not in imported_type:
+        import_declare.append('import %s;' % type_map[pri_key_info.field_type])
+
+    pri_key_name = __get_java_like_string(pri_key_info.field_name)
+    select_pri = "    %s selectByPriKey(%s %s){\n%s%return (%s)sgetSqlMapClientTemplate().queryForObject(\"%s.selectByPriKey\", %s);\n%s}" \
+                 % (domain_object_name, var_type, pri_key_name,
+                    FOUR_SPACE, FOUR_SPACE, domain_object_name, get_domain_object_alias_name(), pri_key_name,
+                    FOUR_SPACE)
+    func_declare.append(select_pri)
+
+    # 生成 insert
+    insert_fun = "    void insert(%s param){\n%s%sgetSqlMapClientTemplate().insert(\"%s.insert\", param);\n%s}" \
+                 % (domain_object_name, FOUR_SPACE, FOUR_SPACE, get_namespace(), FOUR_SPACE)
+    func_declare.append(insert_fun)
+
+    import_str = '\n'.join(import_declare)
+    func_str = '\n'.join(func_declare)
+
+    main_str = "%s\n\n%s\n\npublic class %s extends SqlMapClientDaoSupport implements %s {\n%s\n}" % \
+               (package_str, import_str, get_data_access_object_impl_name(), get_data_access_object_name(), func_str)
     return main_str
 
 
@@ -230,3 +274,6 @@ def get_data_access_object_name():
     return "%c%sDAO" % (java_like_table[0].upper(), java_like_table[1:])
 
 
+def get_data_access_object_impl_name():
+    java_like_table = __get_java_like_string(gen_config['table'])
+    return "%c%sDAOImpl" % (java_like_table[0].upper(), java_like_table[1:])
