@@ -58,5 +58,5 @@ write_to_file(access_object_path, "%s.java" % gen_code.get_data_access_object_na
 
 access_impl_object_path = class_path + java_path\
                             + gen_config['data_access_impl_package'].replace(".", "/")
-write_to_file(access_object_path, "%s.java" % gen_code.get_data_access_object_impl_name(), access_interface_impl)
+write_to_file(access_impl_object_path, "%s.java" % gen_code.get_data_access_object_impl_name(), access_interface_impl)
 exit(0)

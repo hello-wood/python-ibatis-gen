@@ -150,7 +150,7 @@ def gen_domain_object(table_info_list):
         var_type = type_map_sample[field.field_type]
         var_class = type_map[field.field_type]
         if var_type not in imported_type:
-            imported_type.add(var_type)
+            imported_type.append(var_type)
             import_str.append("import %s;" % var_class)
 
         var_name = __get_java_like_string(field.field_name)
@@ -206,7 +206,8 @@ def gen_data_access_interface_impl(pri_key_info):
     domain_object_name = get_domain_object_name()
     package_str = "package %s;" % gen_config['data_access_impl_package']
     import_declare = ['import %s.%s;' % (gen_config['domain_object_package'], domain_object_name),
-                      'import org.springframework.orm.ibatis.support.SqlMapClientDaoSupport;']
+                      'import org.springframework.orm.ibatis.support.SqlMapClientDaoSupport;',
+                      'import %s.%s;' % (gen_config['data_access_package'], get_data_access_object_name())]
     func_declare = []
 
     # 生成 select by pri
@@ -215,14 +216,14 @@ def gen_data_access_interface_impl(pri_key_info):
         import_declare.append('import %s;' % type_map[pri_key_info.field_type])
 
     pri_key_name = __get_java_like_string(pri_key_info.field_name)
-    select_pri = "    %s selectByPriKey(%s %s){\n%s%return (%s)sgetSqlMapClientTemplate().queryForObject(\"%s.selectByPriKey\", %s);\n%s}" \
+    select_pri = "    public %s selectByPriKey(%s %s){\n%s%sreturn (%s)getSqlMapClientTemplate().queryForObject(\"%s.selectByPriKey\", %s);\n%s}" \
                  % (domain_object_name, var_type, pri_key_name,
                     FOUR_SPACE, FOUR_SPACE, domain_object_name, get_domain_object_alias_name(), pri_key_name,
                     FOUR_SPACE)
     func_declare.append(select_pri)
 
     # 生成 insert
-    insert_fun = "    void insert(%s param){\n%s%sgetSqlMapClientTemplate().insert(\"%s.insert\", param);\n%s}" \
+    insert_fun = "    public void insert(%s param){\n%s%sgetSqlMapClientTemplate().insert(\"%s.insert\", param);\n%s}" \
                  % (domain_object_name, FOUR_SPACE, FOUR_SPACE, get_namespace(), FOUR_SPACE)
     func_declare.append(insert_fun)
 
