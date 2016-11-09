@@ -191,7 +191,7 @@ def gen_data_access_interface(pri_key_info):
     func_declare.append(select_pri)
 
     # 生成 insert
-    insert_fun = "    void insert(%s param);" % domain_object_name
+    insert_fun = "    %s insert(%s param);" % (var_type, domain_object_name)
     func_declare.append(insert_fun)
 
     import_str = '\n'.join(import_declare)
@@ -223,8 +223,8 @@ def gen_data_access_interface_impl(pri_key_info):
     func_declare.append(select_pri)
 
     # 生成 insert
-    insert_fun = "    public void insert(%s param){\n%s%sgetSqlMapClientTemplate().insert(\"%s.insert\", param);\n%s}" \
-                 % (domain_object_name, FOUR_SPACE, FOUR_SPACE, get_namespace(), FOUR_SPACE)
+    insert_fun = "    public %s insert(%s param){\n%s%sObject result = getSqlMapClientTemplate().insert(\"%s.insert\", param);\n%s%sif(result==null)result=-1;\n%s%sreturn (%s)result;\n%s}" \
+                 % (var_type, domain_object_name, FOUR_SPACE, FOUR_SPACE, get_namespace(), FOUR_SPACE, FOUR_SPACE, FOUR_SPACE, FOUR_SPACE, var_type, FOUR_SPACE)
     func_declare.append(insert_fun)
 
     import_str = '\n'.join(import_declare)
