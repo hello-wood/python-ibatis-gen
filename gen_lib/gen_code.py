@@ -218,7 +218,7 @@ def gen_data_access_interface_impl(pri_key_info):
     pri_key_name = __get_java_like_string(pri_key_info.field_name)
     select_pri = "    public %s selectByPriKey(%s %s){\n%s%sreturn (%s)getSqlMapClientTemplate().queryForObject(\"%s.selectByPriKey\", %s);\n%s}" \
                  % (domain_object_name, var_type, pri_key_name,
-                    FOUR_SPACE, FOUR_SPACE, domain_object_name, get_domain_object_alias_name(), pri_key_name,
+                    FOUR_SPACE, FOUR_SPACE, domain_object_name, get_namespace(), pri_key_name,
                     FOUR_SPACE)
     func_declare.append(select_pri)
 
