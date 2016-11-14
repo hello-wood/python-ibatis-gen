@@ -3,10 +3,16 @@ import gen_lib.gen_code as gen_code
 from config.sql_config import gen_config
 import os
 
+confim = raw_input("确认生成？生成会覆盖原来的文件。（y 继续）:")
+print confim
+if confim.lower() != 'y':
+    exit(0)
+
 xml = gen_code.gen_xml()
 domain_object = gen_code.gen_domain_object()
 access_interface = gen_code.gen_data_access_interface()
 access_interface_impl = gen_code.gen_data_access_interface_impl()
+print "success!"
 
 
 def write_to_file(path, file_name, content):
