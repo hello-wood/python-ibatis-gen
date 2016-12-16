@@ -83,8 +83,13 @@ def gen_xml():
         node.text = "\n    INSERT INTO %s\n    " % table_name
         dynamic_node_declare = etree.Element("dynamic", prepend="(")
         dynamic_node_declare.text = "\n        "
-        is_not_null_node = None
-        for field in table_field_list:
+        is_not_null_node = etree.Element("isNotNull")
+        is_not_null_node.set("property", get_java_like_string(table_field_list[0].field_name))
+        is_not_null_node.text = "`%s`" % table_field_list[0].field_name
+        is_not_null_node.tail = "\n        "
+        dynamic_node_declare.append(is_not_null_node)
+
+        for field in table_field_list[1:]:
             is_not_null_node = etree.Element("isNotNull")
             is_not_null_node.set("prepend", ",")
             is_not_null_node.set("property", get_java_like_string(field.field_name))
@@ -98,8 +103,13 @@ def gen_xml():
 
         dynamic_node_value = etree.Element("dynamic", prepend="(")
         dynamic_node_value.text = "\n        "
-        is_not_null_node = None
-        for field in table_field_list:
+        is_not_null_node = etree.Element("isNotNull")
+        property_str = get_java_like_string(table_field_list[0].field_name)
+        is_not_null_node.set("property", property_str)
+        is_not_null_node.text = "#%s#" % property_str
+        is_not_null_node.tail = "\n        "
+        dynamic_node_value.append(is_not_null_node)
+        for field in table_field_list[1:]:
             property_str = get_java_like_string(field.field_name)
             is_not_null_node = etree.Element("isNotNull")
             is_not_null_node.set("prepend", ",")
@@ -201,19 +211,19 @@ def gen_data_access_interface_impl():
         import_declare.append('import %s;' % type_map[pri_key_info.field_type])
 
     pri_key_name = get_java_like_string(pri_key_info.field_name)
-    select_pri = "%spublic %s selectByPriKey(%s %s){\n%sreturn (%s)getSqlMapClientTemplate().queryForObject(\"%s.selectByPriKey\", %s);\n%s}" \
-                 % (FOUR_SPACE, domain_object_name, var_type, pri_key_name,
+    select_pri = "%s@Override\n%spublic %s selectByPriKey(%s %s){\n%sreturn (%s)getSqlMapClientTemplate().queryForObject(\"%s.selectByPriKey\", %s);\n%s}" \
+                 % (FOUR_SPACE, FOUR_SPACE, domain_object_name, var_type, pri_key_name,
                     FOUR_SPACE * 2, domain_object_name, namespace, pri_key_name,
                     FOUR_SPACE)
     func_declare.append(select_pri)
 
     # 生成 insert
-    insert_fun = "%spublic %s insert(%s param){\n%sObject result = getSqlMapClientTemplate().insert(\"%s.insert\", param);\n%sif(result==null)result=-1;\n%sreturn (%s)result;\n%s}" \
-                 % (FOUR_SPACE, var_type, domain_object_name, FOUR_SPACE * 2, namespace, FOUR_SPACE * 2, FOUR_SPACE * 2, var_type, FOUR_SPACE)
+    insert_fun = "%s@Override\n%spublic %s insert(%s param){\n%sObject result = getSqlMapClientTemplate().insert(\"%s.insert\", param);\n%sif(result==null)result=-1;\n%sreturn (%s)result;\n%s}" \
+                 % (FOUR_SPACE, FOUR_SPACE, var_type, domain_object_name, FOUR_SPACE * 2, namespace, FOUR_SPACE * 2, FOUR_SPACE * 2, var_type, FOUR_SPACE)
     func_declare.append(insert_fun)
 
-    import_str = '\n'.join(import_declare)
-    func_str = '\n'.join(func_declare)
+    import_str = '\n\n'.join(import_declare)
+    func_str = '\n\n'.join(func_declare)
 
     main_str = "%s\n\n%s\n\npublic class %s extends SqlMapClientDaoSupport implements %s {\n%s\n}" % \
                (package_str, import_str, data_access_object_name_impl, data_access_object_name, func_str)
